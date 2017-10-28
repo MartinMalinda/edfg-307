@@ -1,5 +1,5 @@
 import { moduleFor, test } from 'ember-qunit';
-import { manualSetup, mockSetup, mockCreate } from 'ember-data-factory-guy';
+import FactoryGuy,{ manualSetup, mockSetup, mockCreate } from 'ember-data-factory-guy';
 import Ember from 'ember';
 
 moduleFor('adapter:person', 'Unit | Adapter | person', {
@@ -11,20 +11,19 @@ moduleFor('adapter:person', 'Unit | Adapter | person', {
   }
 });
 
-// Replace this with your real tests.
-test('urlForCreateRecord works with mockCreate', async function(assert) {
+test('snapshot has record and adapterOptions in adapter#urlForCreateRecord', async function(assert) {
   mockCreate('person');
-  const store = this.container.lookup('service:store');
-  const adapter = this.subject();
 
-  // adapter.urlForCreateRecord = function(modelName, snapshot) {
-  //   console.log('snapshot is', snapshot);
-  //   Ember.assert('record is not available on snapshot', snapshot.record);
-  //   return this._super(...arguments);
-  // }
+  let adapter        = FactoryGuy.store.adapterFor('person'),
+      adapterOptions = { name: 'Bob' };
 
-  const savedRecord = await Ember.run(() => {
-    return store.createRecord('person').save();
+  adapter.urlForCreateRecord = function(modelName, snapshot) {
+    assert.ok(snapshot.record, 'the snapshot has record');
+    assert.deepEqual(snapshot.adapterOptions, adapterOptions);
+    return '/users';
+  };
+
+  return await Ember.run(() => {
+    return FactoryGuy.store.createRecord('person', { a: 'test' }).save({ adapterOptions });
   });
-  assert.ok(savedRecord);  
 });
